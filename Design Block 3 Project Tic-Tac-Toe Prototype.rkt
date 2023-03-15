@@ -25,7 +25,7 @@
 (define cols 3)
 
 ; The current players turn to go: this being either 1 or 2 player
-(define currentPlayer 1)
+(define CurrentPlayer 1)
 
 ;---------------------------------------------------------------------
 ; functions to modify state
@@ -35,7 +35,7 @@
                       (vector-set! (vector-ref board rowNum) colNum val)
                       ))
 
-(define switchPlayer (λ () (set! currentPlayer (- 3 currentPlayer))))
+(define SwitchPlayer (λ () (set! CurrentPlayer (- 3 CurrentPlayer))))
 
 
 ;----------------------------------------
@@ -148,7 +148,7 @@ row3 (vector-ref board 0
 
 ;---------------------------------------------------------------------
 ; View: create button matrix;
-(define font1 (make-font #:size 46
+(define Font1 (make-font #:size 46
                          #:face #f
                          #:family 'script
                          #:style 'normal
@@ -158,56 +158,56 @@ row3 (vector-ref board 0
 
 ; adds a button to container - callback does the actionFunc and calls update to refresh display
 ; updateFunc added to the updator set
-(define addButton (λ (container actionFunc updateFunc rowNum colNum)
+(define AddButton (λ (container ActionFunction UpdateFunction rowNum colNum)
                     (let ((newBut
                            (new button% [label ""] [parent container]
                                 [callback
-                                   (lambda (button event)
-                                      (actionFunc)
+                                   (λ (button event)
+                                      (ActionFunction)
                                          (update)
                                                  )]
-                                [font font1] [min-width 80] [min-height 60])
+                                [font Font1] [min-width 100] [min-height 100])
                            ))
-                      (addUpdator (lambda () (updateFunc newBut)))
+                      (AddUpdator (lambda () (UpdateFunction newBut)))
                       )
                     ))
 
 
-(define createButRow (λ (rowContainer rowNum numberOfButtons)
+(define CreateButtonRow (λ (RowContainer RowNumber NumberOfButtons)
                        ; create a row of buttons
                        (cond
-                         ((equal? numberOfButtons 0))
-                         (else  (let ((buttonIndex (+ (* cols (- rowNum 1)) numberOfButtons)))
+                         ((equal? NumberOfButtons 0))
+                         (else  (let ((buttonIndex (+ (* cols (- RowNumber 1)) NumberOfButtons)))
                                   
-                                  (addButton
-                                   rowContainer
+                                  (AddButton
+                                   RowContainer
                                    (λ () ; actionFunc: set data item buttonIndex to currentPlayer; change currentPlayer
-                                     (updateState (- rowNum 1) (- numberOfButtons 1) currentPlayer)
-                                     (switchPlayer)
+                                     (updateState (- RowNumber 1) (- NumberOfButtons 1) CurrentPlayer)
+                                     (SwitchPlayer)
                                      )
-                                   (λ (button) (updateButton button (- rowNum 1) (- numberOfButtons 1) )) ; updateFunc
-                                   rowNum numberOfButtons)
+                                   (λ (button) (UpdateButton button (- RowNumber 1) (- NumberOfButtons 1) )) ; updateFunc
+                                   RowNumber NumberOfButtons)
                                   
                                   )
-                                (createButRow rowContainer rowNum (- numberOfButtons 1)))
+                                (CreateButtonRow RowContainer RowNumber (- NumberOfButtons 1)))
                          )))
 
 
-(define createButtonRows (λ (vContainer rowCount colCount)
+(define CreateButtonRows (λ (vContainer rowCount colCount)
                            ; create a rowCount rows of buttons
                            (cond
                              ((equal? rowCount 0) )
                              (else  
-                              (createButRow 
+                              (CreateButtonRow 
                                (new horizontal-panel% [parent vContainer]
                                     [alignment '(center center)])  rowCount colCount)
-                              (createButtonRows vContainer (- rowCount 1) colCount) 
+                              (CreateButtonRows vContainer (- rowCount 1) colCount) 
                               )
                              )
                            )
   )
-(define createBoard (λ (container rowCount colCount) 
-                      (createButtonRows 
+(define CreateBoard (λ (container rowCount colCount) 
+                      (CreateButtonRows 
                        (new vertical-panel% [parent container]
                             [alignment '(center center)])
                        rowCount colCount)
@@ -215,20 +215,20 @@ row3 (vector-ref board 0
   )
 
 ; add a message box at the bottom: this will be updated by do show whose turn it is
-(define font2 (make-font #:size 20
+(define Font2 (make-font #:size 20
                          #:face #f
                          #:family 'modern
                          #:style 'italic
                          #:weight'bold)) 
 
-(define messageBox (new message% [label ""] [parent myFrame] [font font2] [auto-resize #t]))
+(define messageBox (new message% [label ""] [parent myFrame] [font Font2] [auto-resize #t]))
 
-(define addMessageArea (λ ()
+(define AddMessageArea (λ ()
                          
-                         (addUpdator (λ ()
+                         (AddUpdator (λ ()
                                        (let ((w (winner)))
                                          (cond
-                                           ((equal? w 0) (send messageBox set-label (format "Player ~a to play" currentPlayer)))
+                                           ((equal? w 0) (send messageBox set-label (format "Player ~a to play" CurrentPlayer)))
                                            ((equal? w 3) (send messageBox set-label "It's a DRAW !!!"))
                                            (#t (send messageBox set-label (format "Winner is Player ~a !!!" w)))
                                            )
@@ -238,8 +238,8 @@ row3 (vector-ref board 0
 ;---------------------------------------------------------------------
 ; update a button - change label and disable
 
-(define updateButton (λ (but rowNum colNum)
-                       (let* ((val (vector-ref (vector-ref board  rowNum) colNum))
+(define UpdateButton (λ (but rowNumber colNumber)
+                       (let* ((val (vector-ref (vector-ref board  rowNumber) colNumber))
                               (str (cond
                                      ((= val 1) "X")
                                      ((= val 2) "O")
@@ -258,30 +258,30 @@ row3 (vector-ref board 0
                        ))
 
 ; list of functions to update display
-(define updators (list))
+(define Updators (list))
 ; run all update functions
 (define update (λ ()
-                 (for-each (λ (func) (func))  updators)
+                 (for-each (λ (func) (func))  Updators)
                  ))
-(define addUpdator (λ (fun)
-                     (set! updators (cons fun updators))))
+(define AddUpdator (λ (fun)
+                     (set! Updators (cons fun Updators))))
 
 
 ;---------------------------------------------------------------------
 ; initialisation - create the view
 
-(createBoard myFrame rows cols)
-(addMessageArea)
+(CreateBoard myFrame rows cols)
+(AddMessageArea)
 (send myFrame show #t)
 
-(define restrt (new button%
+(define RestartGame (new button%
                     [parent myFrame]
                     [label "Restart"]
                     [callback (λ (o e)
                                 (vector-set! board 0 (vector 0 0 0))
                                 (vector-set! board 1 (vector 0 0 0))
                                 (vector-set! board 2 (vector 0 0 0))
-                                (set! currentPlayer 1)
+                                (set! CurrentPlayer 1)
                                 (update)
                                 )]))
 
